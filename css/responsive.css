@@ -1,0 +1,152 @@
+@media (max-width: 980px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feature-grid,
+  .review-grid,
+  .footer__inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collection-shell,
+  .product-detail,
+  .cart-page__layout,
+  .contact-layout,
+  .content-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .product-info,
+  .cart-summary,
+  .filters {
+    position: static;
+  }
+
+  .button--filter {
+    display: inline-flex;
+    width: max-content;
+    margin-bottom: 1rem;
+  }
+
+  .filters {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 180;
+    width: min(320px, 88vw);
+    border-radius: 0;
+    transform: translateX(-104%);
+    transition: transform 240ms ease;
+    overflow: auto;
+  }
+
+  .filters.is-open {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --nav-height: 66px;
+  }
+
+  .nav {
+    grid-template-columns: auto auto 1fr;
+    gap: 0.6rem;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .nav__links {
+    position: fixed;
+    inset: var(--nav-height) 0 auto;
+    display: none;
+    grid-column: 1 / -1;
+    padding: 1rem;
+    background: rgba(250, 248, 246, 0.98);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 16px 32px rgba(43, 43, 43, 0.08);
+  }
+
+  .nav__links.is-open {
+    display: grid;
+  }
+
+  .logo {
+    font-size: 1.16rem;
+  }
+
+  .hero {
+    min-height: 78vh;
+  }
+
+  .hero::after {
+    background: linear-gradient(0deg, rgba(250, 248, 246, 0.92), rgba(250, 248, 246, 0.24));
+  }
+
+  .hero__content {
+    align-self: end;
+  }
+
+  .category-grid,
+  .newsletter__form,
+  .product-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card,
+  .category-card img {
+    min-height: 320px;
+  }
+
+  .section {
+    padding: 3.7rem 0;
+  }
+
+  .section--soft {
+    padding-top: 3.7rem;
+    padding-bottom: 3.7rem;
+  }
+
+  .section__header--split {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .collection-toolbar label {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .product-grid,
+  .feature-grid,
+  .review-grid,
+  .footer__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .product-card__body {
+    padding: 1rem;
+  }
+
+  .cart-page__layout {
+    gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

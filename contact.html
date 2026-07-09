@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact | Lumina Cu Tine</title>
+  <meta name="description" content="Contactăți Lumina Cu Tine pentru suport la comenzi, ajutor cu dimensionare și întrebări despre îngrijire.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body data-page="content">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+  <main id="main">
+    <section class="page-heading">
+      <p class="eyebrow">Contact</p>
+      <h1>Suntem aici să ajutăm.</h1>
+      <p>Întinţebari despre dimensionare, îngrijire, livrare sau o comandă existentă? Trimiteți o notă și echipa noastru de studio va răspunde în două zile lucrătoare.</p>
+    </section>
+    <section class="contact-layout">
+      <form class="contact-form" id="contact-form">
+        <label>Nume<input type="text" name="name" autocomplete="name" required></label>
+        <label>Email<input type="email" name="email" autocomplete="email" required></label>
+        <label>Mesaj<textarea name="message" rows="6" required></textarea></label>
+        <button class="button button--primary" type="submit">Trimite Mesaj</button>
+        <p class="form-note" id="contact-note" role="status"></p>
+      </form>
+      <aside class="contact-card">
+        <h2>Detalii studio</h2>
+        <p><strong>Email</strong><br>hello@luminacutine.example</p>
+        <p><strong>Ore</strong><br>Luni - Vineri, 9:00-17:00</p>
+        <p><strong>Instagram</strong><br>@luminacutine</p>
+      </aside>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+</body>
+</html>

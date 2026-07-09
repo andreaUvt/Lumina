@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lumina Cu Tine | Coliere și Brățări Atemporale</title>
+  <meta name="description" content="Lumina Cu Tine creează coliere și brățări realizate manual din materiale premium pentru eleganță zilnică.">
+  <meta name="theme-color" content="#FAF8F6">
+  <meta property="og:title" content="Lumina Cu Tine">
+  <meta property="og:description" content="Coliere și brățări realizate manual, proiectate pentru a îmbunătăți fiecare ținută.">
+  <meta property="og:image" content="assets/images/hero-jewelry.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/collection.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="hero" aria-label="Lumina Cu Tine hero">
+      <picture>
+        <source srcset="assets/images/hero-jewelry.png" media="(min-width: 720px)">
+        <img src="assets/images/hero-jewelry.png" alt="Bijuterii elegante purtate cu o compoziție minimalistă caldă" class="hero__image">
+      </picture>
+      <div class="hero__content fade-in">
+        <p class="eyebrow">Eleganță și putere</p>
+        <h1>Lumina cu tine</h1>
+        <p>Coliere și brățări pentru credincioși adevărați</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="necklaces.html">Cumpărați Coliere</a>
+          <a class="button button--ghost" href="bracelets.html">Cumpărați Brățări</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section__header">
+        <p class="eyebrow">Cumpărați după categorie</p>
+        <h2>Rafinate pentru purtare zilnică.</h2>
+      </div>
+      <div class="category-grid">
+        <a class="category-card" href="necklaces.html">
+          <img src="assets/images/category-necklaces.png" alt="Colecția de coliere din aur" loading="lazy">
+          <span>
+            <strong>Coliere</strong>
+            <em>Explorează</em>
+          </span>
+        </a>
+        <a class="category-card" href="bracelets.html">
+          <img src="assets/images/category-bracelets.png" alt="Colecția de brățări din aur" loading="lazy">
+          <span>
+            <strong>Brățări</strong>
+            <em>Explorează</em>
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <section class="section section--soft reveal">
+      <div class="section__header section__header--split">
+        <div>
+          <p class="eyebrow">Produse recomandate</p>
+          <h2>Esențiale polisate.</h2>
+        </div>
+        <a class="text-link" href="collection.html">Vezi colecția</a>
+      </div>
+      <div class="product-grid" id="featured-products" aria-live="polite"></div>
+    </section>
+
+    <section class="section reveal">
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-card__icon" aria-hidden="true">◆</span>
+          <h3>Materiale Premium</h3>
+          <p>Aur placat, argint reciclat, perle de apă dulce și pietre surse responsabil.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" aria-hidden="true">✦</span>
+          <h3>Calitate Realizată Manual</h3>
+          <p>Fiecare piesă este finisată de meșteri calificați și inspectată înainte de expediție.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" aria-hidden="true">●</span>
+          <h3>Plăți Sigure</h3>
+          <p>Checkout-ul este gestionat prin Stripe cu detaliile cărții ținute departe de site-ul nostru.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card__icon" aria-hidden="true">➝</span>
+          <h3>Livrare Rapidă</h3>
+          <p>Ambalare atentă și livrare cu urmărire la fiecare comandă.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--soft reveal">
+      <div class="section__header">
+        <p class="eyebrow">Customer reviews</p>
+        <h2>Quiet luxury, warmly received.</h2>
+      </div>
+      <div class="review-grid">
+        <article class="review-card"><span>★★★★★</span><p>“The Luna Pendant feels delicate but substantial. I wear it almost every day.”</p><strong>Amelia R.</strong></article>
+        <article class="review-card"><span>★★★★★</span><p>“Beautiful packaging, fast shipping, and the bracelet clasp is wonderfully secure.”</p><strong>Nora S.</strong></article>
+        <article class="review-card"><span>★★★★★</span><p>“Elegant without being fussy. The kind of piece that makes a plain shirt look intentional.”</p><strong>Mara C.</strong></article>
+      </div>
+    </section>
+
+    <section class="newsletter reveal" aria-labelledby="newsletter-title">
+      <p class="eyebrow">Newsletter</p>
+      <h2 id="newsletter-title">First access to new arrivals.</h2>
+      <form id="newsletter-form" class="newsletter__form">
+        <label class="sr-only" for="newsletter-email">Email address</label>
+        <input id="newsletter-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        <button class="button button--primary" type="submit">Subscribe</button>
+      </form>
+      <p class="form-note" id="newsletter-note" role="status"></p>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>
