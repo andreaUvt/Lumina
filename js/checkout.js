@@ -21,11 +21,28 @@ async function startCheckout() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Checkout nu a putut fi creat.");
+
+    const text = await response.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const detail = data?.error || text || "Checkout nu a putut fi creat.";
+      throw new Error(`Status ${response.status}: ${detail}`);
+    }
+
+    if (!data?.url) {
+      throw new Error(`Răspuns invalid de checkout: ${text || "fără URL"}`);
+    }
+
     window.location.assign(data.url);
   } catch (error) {
     console.error(error);
-    toast("Checkout este gata dup\u0103 ce cheile Cloudflare \u0219i Stripe sunt configurate.");
+    const detail = error?.message || "Nu s-a putut crea sesiunea de checkout.";
+    toast(`Checkout nu a putut fi pornit: ${detail}`);
   }
 }
