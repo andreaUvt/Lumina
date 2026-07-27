@@ -1,11 +1,11 @@
 const DEFAULT_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseUrl: "https://sbcttqfncxlzocuanypc.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiY3R0cWZuY3hsem9jdWFueXBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTY2NjUsImV4cCI6MjA5OTE5MjY2NX0.2jGf_1xVARUJtQyfrHUCgs5oneQGyJFRt5tzgZ738AA"
 };
 
 const config = {
   ...DEFAULT_CONFIG,
-  ...(window.LUMINACUTINE_CONFIG || {})
+  ...(window.AURELIA_CONFIG || window.LUMINACUTINE_CONFIG || {})
 };
 
 let supabaseClientPromise;
