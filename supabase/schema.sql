@@ -79,6 +79,64 @@ create table if not exists webhook_events (
   created_at timestamptz not null default now()
 );
 
+create or replace function record_order_and_decrement_inventory(
+  p_stripe_session_id text,
+  p_status text,
+  p_email text,
+  p_total_cents integer,
+  p_currency text,
+  p_cart jsonb,
+  p_user_id uuid default null
+)
+returns uuid
+language plpgsql
+security definer
+as $$
+declare
+  v_order_id uuid;
+  v_item jsonb;
+begin
+  insert into orders (
+    user_id,
+    stripe_session_id,
+    status,
+    email,
+    total_cents,
+    currency
+  )
+  values (
+    p_user_id,
+    p_stripe_session_id,
+    p_status,
+    p_email,
+    p_total_cents,
+    p_currency
+  )
+  returning id into v_order_id;
+
+  for v_item in select * from jsonb_array_elements(coalesce(p_cart, '[]'::jsonb))
+  loop
+    insert into order_items (
+      order_id,
+      product_id,
+      quantity
+    )
+    values (
+      v_order_id,
+      v_item->>'id',
+      coalesce((v_item->>'quantity')::int, 1)
+    );
+
+    update products
+    set inventory = greatest(inventory - coalesce((v_item->>'quantity')::int, 1), 0),
+        updated_at = now()
+    where id = v_item->>'id';
+  end loop;
+
+  return v_order_id;
+end;
+$$;
+
 create or replace function decrement_inventory(product_id_input text, quantity_input integer)
 returns void
 language plpgsql

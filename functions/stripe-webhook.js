@@ -66,38 +66,35 @@ async function recordWebhookEvent(env, event) {
 }
 
 async function handleCheckoutCompleted(env, session) {
-  const cart = JSON.parse(session.metadata?.cart || "[]");
-  const orderResponse = await supabaseFetch(env, "/rest/v1/orders", {
+  const cart = parseCart(session);
+  if (!cart.length) return;
+
+  const response = await supabaseFetch(env, "/rest/v1/rpc/record_order_and_decrement_inventory", {
     method: "POST",
-    headers: { Prefer: "return=representation" },
     body: JSON.stringify({
-      stripe_session_id: session.id,
-      status: "paid",
-      email: session.customer_details?.email,
-      total_cents: session.amount_total,
-      currency: session.currency
+      p_stripe_session_id: session.id,
+      p_status: "paid",
+      p_email: session.customer_details?.email || null,
+      p_total_cents: session.amount_total || 0,
+      p_currency: session.currency || "usd",
+      p_cart: cart,
+      p_user_id: session.metadata?.user_id || null
     })
   });
-  if (!orderResponse.ok) throw new Error("Could not store order.");
-  const [order] = await orderResponse.json();
 
-  const items = cart.map((item) => ({
-    order_id: order.id,
-    product_id: item.id,
-    quantity: item.quantity
-  }));
-  if (items.length) {
-    const itemResponse = await supabaseFetch(env, "/rest/v1/order_items", {
-      method: "POST",
-      body: JSON.stringify(items)
-    });
-    if (!itemResponse.ok) throw new Error("Could not store order items.");
+  if (!response.ok) throw new Error("Could not store order and update inventory.");
+}
+
+function parseCart(session) {
+  const rawCart = session.metadata?.cart || session.metadata?.items || "[]";
+  if (Array.isArray(rawCart)) return rawCart;
+
+  try {
+    const parsed = JSON.parse(rawCart);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
-
-  await Promise.all(cart.map((item) => supabaseFetch(env, "/rest/v1/rpc/decrement_inventory", {
-    method: "POST",
-    body: JSON.stringify({ product_id_input: item.id, quantity_input: item.quantity })
-  })));
 }
 
 function supabaseFetch(env, path, options = {}) {
