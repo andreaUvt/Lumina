@@ -68,7 +68,7 @@ async function createStripeSession(env, lineItems, cartItems) {
   form.set("mode", "payment");
   form.set("success_url", `${env.SITE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`);
   form.set("cancel_url", `${env.SITE_URL}/cart.html`);
-  form.set("automatic_tax[enabled]", "true");
+  //form.set("automatic_tax[enabled]", "true");
   form.set("shipping_address_collection[allowed_countries][0]", "US");
   form.set("metadata[cart]", JSON.stringify(cartItems));
 
