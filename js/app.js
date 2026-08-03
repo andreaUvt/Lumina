@@ -119,7 +119,7 @@ function renderProductSchema(product) {
     brand: { "@type": "Brand", name: "Lumina Cu Tine" },
     offers: {
       "@type": "Offer",
-      priceCurrency: "USD",
+      priceCurrency: "RON",
       price: (product.price / 100).toFixed(2),
       availability: product.availability === "out_of_stock" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock"
     }

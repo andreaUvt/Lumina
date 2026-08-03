@@ -25,8 +25,8 @@ function renderFilterPanel(category) {
     <div class="filter-group">
       <h3>Interval de pret</h3>
       <div class="range-row">
-        <label>Min<input type="number" name="min" min="0" placeholder="$0"></label>
-        <label>Max<input type="number" name="max" min="0" placeholder="$250"></label>
+        <label>Min<input type="number" name="min" min="0" placeholder="0 lei"></label>
+        <label>Max<input type="number" name="max" min="0" placeholder="1000 lei"></label>
       </div>
     </div>
     <div class="filter-group">

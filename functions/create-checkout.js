@@ -4,6 +4,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
+const FREE_SHIPPING_THRESHOLD_CENTS = 20000; // 200.00 RON
+const STANDARD_SHIPPING_CENTS = 1500; // 15.00 RON
+
 export async function onRequestOptions() {
   return new Response(null, { headers: corsHeaders });
 }
@@ -27,7 +30,7 @@ export async function onRequestPost({ request, env }) {
       return {
         quantity: item.quantity,
         price_data: {
-          currency: "usd",
+          currency: "ron",
           unit_amount: product.price_cents,
           product_data: {
             name: product.title,
@@ -38,7 +41,13 @@ export async function onRequestPost({ request, env }) {
       };
     });
 
-    const session = await createStripeSession(env, lineItems, cleanItems);
+    const subtotalCents = lineItems.reduce(
+      (sum, item) => sum + item.price_data.unit_amount * item.quantity,
+      0
+    );
+    const shippingCents = subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : STANDARD_SHIPPING_CENTS;
+
+    const session = await createStripeSession(env, lineItems, cleanItems, shippingCents);
     return json({ url: session.url });
   } catch (error) {
     console.error(error);
@@ -63,7 +72,7 @@ async function fetchProducts(env, ids) {
   return response.json();
 }
 
-async function createStripeSession(env, lineItems, cartItems) {
+async function createStripeSession(env, lineItems, cartItems, shippingCents) {
   const form = new URLSearchParams();
   form.set("mode", "payment");
   form.set("success_url", `${env.SITE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`);
@@ -71,6 +80,14 @@ async function createStripeSession(env, lineItems, cartItems) {
   //form.set("automatic_tax[enabled]", "true");
   form.set("shipping_address_collection[allowed_countries][0]", "RO");
   form.set("metadata[cart]", JSON.stringify(cartItems));
+
+  form.set("shipping_options[0][shipping_rate_data][type]", "fixed_amount");
+  form.set("shipping_options[0][shipping_rate_data][fixed_amount][amount]", String(shippingCents));
+  form.set("shipping_options[0][shipping_rate_data][fixed_amount][currency]", "ron");
+  form.set(
+    "shipping_options[0][shipping_rate_data][display_name]",
+    shippingCents === 0 ? "Livrare gratuită" : "Livrare standard"
+  );
 
   lineItems.forEach((item, index) => {
     form.set(`line_items[${index}][quantity]`, String(item.quantity));

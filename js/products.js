@@ -184,9 +184,9 @@ export const SAMPLE_PRODUCTS = [
 ];
 
 export function formatMoney(cents) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("ro-RO", {
     style: "currency",
-    currency: "USD"
+    currency: "RON"
   }).format(cents / 100);
 }
 

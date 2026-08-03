@@ -127,9 +127,9 @@ function renderCartDrawer() {
         </header>
         <div class="cart-list" id="cart-drawer-items"></div>
         <footer class="cart-drawer__footer">
-          <div class="summary-row"><span>Subtotal</span><strong data-cart-subtotal>$0.00</strong></div>
-          <div class="summary-row"><span>Livrare estimat\u0103</span><strong data-cart-shipping>$0.00</strong></div>
-          <div class="summary-row summary-row--total"><span>Total</span><strong data-cart-total>$0.00</strong></div>
+          <div class="summary-row"><span>Subtotal</span><strong data-cart-subtotal>0.00 lei</strong></div>
+          <div class="summary-row"><span>Livrare estimat\u0103</span><strong data-cart-shipping>0.00 lei</strong></div>
+          <div class="summary-row summary-row--total"><span>Total</span><strong data-cart-total>0.00 lei</strong></div>
           <button class="button button--primary button--full" type="button" data-checkout>Checkout</button>
           <a class="button button--ghost button--full" href="cart.html">Vezi Co\u0219ul</a>
         </footer>

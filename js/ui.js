@@ -140,7 +140,7 @@ export function productCard(product) {
           <span>${product.category === "necklaces" ? "Colier" : "Br\u0103\u021b\u0103r\u0103"}</span>
           <strong>${formatMoney(product.price)}</strong>
         </div>
-        <button class="quick-add" type="button" data-add-to-cart="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? "\u00cenghețit" : "Adaug\u0103 Rapid"}</button>
+        <button class="quick-add" type="button" data-add-to-cart="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? "Stoc epuizat" : "Adaug\u0103 Rapid"}</button>
       </div>
     </article>`;
 }
