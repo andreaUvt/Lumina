@@ -4,7 +4,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
-const FREE_SHIPPING_THRESHOLD_CENTS = 20000; // 200.00 RON
+const SHIPPING_THRESHOLD_CENTS = 25000; // 250.00 RON
 const STANDARD_SHIPPING_CENTS = 1500; // 15.00 RON
 
 export async function onRequestOptions() {
@@ -45,7 +45,7 @@ export async function onRequestPost({ request, env }) {
       (sum, item) => sum + item.price_data.unit_amount * item.quantity,
       0
     );
-    const shippingCents = subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : STANDARD_SHIPPING_CENTS;
+    const shippingCents = subtotalCents >= SHIPPING_THRESHOLD_CENTS ? STANDARD_SHIPPING_CENTS : 0;
 
     const session = await createStripeSession(env, lineItems, cleanItems, shippingCents);
     return json({ url: session.url });

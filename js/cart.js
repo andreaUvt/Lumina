@@ -3,7 +3,8 @@ import { icons, toast } from "./ui.js";
 import { getCurrentUser, getSupabase } from "./supabase.js";
 
 const CART_KEY = "luminacutine_cart";
-const SHIPPING_CENTS = 0;
+const SHIPPING_THRESHOLD = 25000;
+const SHIPPING_AMOUNT = 1500;
 let state = { items: [] };
 
 export function initCart() {
@@ -148,7 +149,7 @@ async function updateCartViews() {
     product: await getProduct(item.id)
   })));
   const subtotal = productPairs.reduce((sum, pair) => sum + pair.product.price * pair.item.quantity, 0);
-  const shipping = subtotal > 0 ? SHIPPING_CENTS : 0;
+  const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_AMOUNT;
 
   document.querySelectorAll("[data-cart-subtotal]").forEach((node) => node.textContent = formatMoney(subtotal));
   document.querySelectorAll("[data-cart-shipping]").forEach((node) => node.textContent = formatMoney(shipping));
