@@ -5,3 +5,7 @@ compatibility_date = "2024-10-01"
 [assets]
 directory = "./"
 binding = "ASSETS"
+
+[vars]
+SUPABASE_URL = "https://sbcttqfncxlzocuanypc.supabase.co"
+SITE_URL = "https://jewlery.ciorbaandrea04.workers.dev"
