@@ -4,7 +4,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
-const SHIPPING_THRESHOLD_CENTS = 25000; // 250.00 RON
+const FREE_SHIPPING_THRESHOLD_CENTS = 20000; // 200.00 RON
 const STANDARD_SHIPPING_CENTS = 1500; // 15.00 RON
 
 export async function onRequestOptions() {
@@ -19,21 +19,38 @@ export async function onRequestPost({ request, env }) {
 
     const cleanItems = items.map((item) => ({
       id: String(item.id || ""),
+      variantId: item.variantId ? String(item.variantId) : null,
       quantity: Math.max(1, Math.min(9, Number(item.quantity || 1)))
     })).filter((item) => item.id);
 
     const products = await fetchProducts(env, cleanItems.map((item) => item.id));
+    const variantIds = cleanItems.filter((item) => item.variantId).map((item) => item.variantId);
+    const variants = await fetchVariants(env, variantIds);
+
     const lineItems = cleanItems.map((item) => {
       const product = products.find((entry) => entry.id === item.id);
-      if (!product || product.inventory < item.quantity) throw new Error(`Unavailable item: ${item.id}`);
+      if (!product) throw new Error(`Unavailable item: ${item.id}`);
+
+      let colorName = null;
+      if (item.variantId) {
+        const variant = variants.find((entry) => entry.id === item.variantId);
+        if (!variant || variant.inventory < item.quantity) {
+          throw new Error(`Unavailable color for: ${product.title}`);
+        }
+        colorName = variant.color_name;
+      } else if (product.inventory < item.quantity) {
+        throw new Error(`Unavailable item: ${item.id}`);
+      }
+
       const image = firstImage(product);
+      const name = colorName ? `${product.title} — ${colorName}` : product.title;
       return {
         quantity: item.quantity,
         price_data: {
           currency: "ron",
           unit_amount: product.price_cents,
           product_data: {
-            name: product.title,
+            name,
             description: product.description || undefined,
             images: image ? [new URL(image, env.SITE_URL).href] : undefined
           }
@@ -45,7 +62,7 @@ export async function onRequestPost({ request, env }) {
       (sum, item) => sum + item.price_data.unit_amount * item.quantity,
       0
     );
-    const shippingCents = subtotalCents >= SHIPPING_THRESHOLD_CENTS ? STANDARD_SHIPPING_CENTS : 0;
+    const shippingCents = subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : STANDARD_SHIPPING_CENTS;
 
     const session = await createStripeSession(env, lineItems, cleanItems, shippingCents);
     return json({ url: session.url });
@@ -72,12 +89,24 @@ async function fetchProducts(env, ids) {
   return response.json();
 }
 
+async function fetchVariants(env, ids) {
+  if (!ids.length) return [];
+  const quoted = ids.map((id) => `"${id.replaceAll('"', '\\"')}"`).join(",");
+  const response = await fetch(`${env.SUPABASE_URL}/rest/v1/product_variants?id=in.(${quoted})&select=*`, {
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+    }
+  });
+  if (!response.ok) throw new Error("Could not validate color options.");
+  return response.json();
+}
+
 async function createStripeSession(env, lineItems, cartItems, shippingCents) {
   const form = new URLSearchParams();
   form.set("mode", "payment");
   form.set("success_url", `${env.SITE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`);
   form.set("cancel_url", `${env.SITE_URL}/cart.html`);
-  //form.set("automatic_tax[enabled]", "true");
   form.set("shipping_address_collection[allowed_countries][0]", "RO");
   form.set("metadata[cart]", JSON.stringify(cartItems));
 

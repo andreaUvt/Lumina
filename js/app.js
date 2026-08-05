@@ -4,7 +4,7 @@ import { initCheckout } from "./checkout.js";
 import { initAuth } from "./auth.js";
 import { initAnimations } from "./animations.js";
 import { initFilters } from "./filters.js";
-import { formatMoney, getFeaturedProducts, getProduct, getRelatedProducts, loadProducts } from "./products.js";
+import { formatMoney, getFeaturedProducts, getProduct, getRelatedProducts, loadProducts, loadVariants } from "./products.js";
 import { insertNewsletterSubscriber } from "./supabase.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -41,18 +41,43 @@ async function initProductPage() {
   const product = await getProduct(id);
   document.title = `${product.title} | Lumina Cu Tine`;
   document.querySelector('meta[name="description"]')?.setAttribute("content", product.description);
-  renderProductDetail(product);
+  const variants = await loadVariants(product.id);
+  renderProductDetail(product, variants);
   renderProductSchema(product);
   const related = await getRelatedProducts(product);
   document.getElementById("related-products").innerHTML = related.map(productCard).join("");
 }
 
-function renderProductDetail(product) {
+function renderProductDetail(product, variants = []) {
   const detail = document.getElementById("product-detail");
   const imageButtons = product.images.map((image, index) => `
-    <button type="button" class="${index === 0 ? "is-active" : ""}" data-gallery-image="${image}" aria-label="Arat\u0103 imagine ${index + 1}">
+    <button type="button" class="${index === 0 ? "is-active" : ""}" data-gallery-image="${image}" aria-label="Arată imagine ${index + 1}">
       <img src="${image}" alt="${product.title} vizualizare ${index + 1}" loading="lazy">
     </button>`).join("");
+
+  const inStockVariants = variants.filter((variant) => variant.inventory > 0);
+  const defaultVariant = inStockVariants[0] || variants[0] || null;
+  const hasVariants = variants.length > 0;
+
+  const colorPicker = hasVariants ? `
+    <div class="color-picker" data-color-picker>
+      <p><strong>Culoare:</strong> <span data-selected-color>${defaultVariant?.color_name || ""}</span></p>
+      <div class="color-swatches">
+        ${variants.map((variant) => `
+          <button type="button"
+            class="swatch ${variant.id === defaultVariant?.id ? "is-active" : ""} ${variant.inventory <= 0 ? "swatch--disabled" : ""}"
+            data-variant-id="${variant.id}"
+            data-color-name="${variant.color_name}"
+            data-inventory="${variant.inventory}"
+            style="background:${variant.color_hex || "#ccc"}"
+            ${variant.inventory <= 0 ? "disabled" : ""}
+            aria-label="${variant.color_name}${variant.inventory <= 0 ? " (stoc epuizat)" : ""}"
+            aria-pressed="${variant.id === defaultVariant?.id}"></button>
+        `).join("")}
+      </div>
+    </div>` : "";
+
+  const noStock = hasVariants ? !defaultVariant || defaultVariant.inventory <= 0 : product.availability === "out_of_stock";
 
   detail.innerHTML = `
     <div class="product-gallery">
@@ -60,15 +85,16 @@ function renderProductDetail(product) {
       <div class="product-thumbs">${imageButtons}</div>
     </div>
     <div class="product-info">
-      <p class="eyebrow">${product.category === "necklaces" ? "Colier" : "Br\u0103\u021b\u0103r\u0103"}</p>
+      <p class="eyebrow">${product.category === "necklaces" ? "Colier" : "Brățară"}</p>
       <h1>${product.title}</h1>
       <p class="product-info__price">${formatMoney(product.price)}</p>
       <p class="product-info__desc">${product.description}</p>
       <div class="product-facts">
         <p><strong>Materiale:</strong> ${product.materials}</p>
         <p><strong>Dimensiuni:</strong> ${product.dimensions}</p>
-        <p><strong>Disponibilitate:</strong> ${availabilityLabel(product.availability)}</p>
+        <p><strong>Disponibilitate:</strong> <span data-availability-label>${hasVariants ? (noStock ? "Epuizat" : "In stoc") : availabilityLabel(product.availability)}</span></p>
       </div>
+      ${colorPicker}
       <label>Cantitate
         <span class="quantity">
           <button type="button" data-qty-step="-1" aria-label="Micșoreaza cantitatea">-</button>
@@ -77,13 +103,21 @@ function renderProductDetail(product) {
         </span>
       </label>
       <div class="product-actions">
-        <button class="button button--primary" type="button" data-add-to-cart="${product.id}" data-product-action>Adaug\u0103 la Co\u0219</button>
-        <button class="button button--ghost" type="button" data-buy-now="${product.id}" data-product-action>Cump\u0103r\u0103 Acum</button>
+        <button class="button button--primary" type="button"
+          data-add-to-cart="${product.id}"
+          data-variant-id="${defaultVariant?.id || ""}"
+          data-product-action
+          ${noStock ? "disabled" : ""}>Adaugă la Coș</button>
+        <button class="button button--ghost" type="button"
+          data-buy-now="${product.id}"
+          data-variant-id="${defaultVariant?.id || ""}"
+          data-product-action
+          ${noStock ? "disabled" : ""}>Cumpără Acum</button>
       </div>
       <div class="accordion">
-        <details open><summary>Livrare</summary><p>Comenzile se expediaz\u0103 \u00een 1-2 zile lucr\u0103toare cu urm\u0103rire. Livrarea expres\u0103 poate fi configurat\u0103 \u00een Stripe Checkout.</p></details>
-        <details><summary>Retururi</summary><p>Piesele nedrăgate pot fi returnate \u00een 30 de zile \u00een ambalajul original. Articolele cu vânzare final\u0103 sunt notate \u00eenainte de checkout.</p></details>
-        <details><summary>Instruc\u021biuni de \u00cengrijire</summary><p>P\u0103streaz\u0103 separat, evit\u0103 parfumul \u0219i apa, \u0219i polez\u0103 ușor cu o cărpă moale și uscat\u0103.</p></details>
+        <details open><summary>Livrare</summary><p>Comenzile se expediază în 1-2 zile lucrătoare cu urmărire. Livrarea expresă poate fi configurată în Stripe Checkout.</p></details>
+        <details><summary>Retururi</summary><p>Piesele nedrăgate pot fi returnate în 30 de zile în ambalajul original. Articolele cu vânzare finală sunt notate înainte de checkout.</p></details>
+        <details><summary>Instrucțiuni de îngrijire</summary><p>Păstrează separat, evită parfumul și apa, și polezăușor cu o cărpă moale și uscată.</p></details>
       </div>
     </div>`;
 
@@ -91,6 +125,7 @@ function renderProductDetail(product) {
     const galleryButton = event.target.closest("[data-gallery-image]");
     const qtyButton = event.target.closest("[data-qty-step]");
     const productAction = event.target.closest("[data-product-action]");
+    const swatchButton = event.target.closest("[data-variant-id][data-color-name]");
 
     if (galleryButton) {
       document.getElementById("main-product-image").src = galleryButton.dataset.galleryImage;
@@ -100,6 +135,22 @@ function renderProductDetail(product) {
     if (qtyButton) {
       const input = document.getElementById("product-quantity");
       input.value = Math.max(1, Math.min(9, Number(input.value) + Number(qtyButton.dataset.qtyStep)));
+    }
+    if (swatchButton && !swatchButton.disabled) {
+      detail.querySelectorAll("[data-variant-id][data-color-name]").forEach((button) => {
+        button.classList.remove("is-active");
+        button.setAttribute("aria-pressed", "false");
+      });
+      swatchButton.classList.add("is-active");
+      swatchButton.setAttribute("aria-pressed", "true");
+      detail.querySelector("[data-selected-color]").textContent = swatchButton.dataset.colorName;
+
+      const selectedInStock = Number(swatchButton.dataset.inventory) > 0;
+      detail.querySelectorAll("[data-add-to-cart], [data-buy-now]").forEach((button) => {
+        button.dataset.variantId = swatchButton.dataset.variantId;
+        button.disabled = !selectedInStock;
+      });
+      detail.querySelector("[data-availability-label]").textContent = selectedInStock ? "In stoc" : "Epuizat";
     }
     if (productAction) {
       productAction.dataset.quantity = document.getElementById("product-quantity").value;
@@ -149,7 +200,7 @@ function initSharedForms() {
 
   document.getElementById("contact-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
-    document.getElementById("contact-note").textContent = "Mulțumesc. Acest formular demo este gata s\u0103 se conecteze la o Funcție Cloudflare.";
+    document.getElementById("contact-note").textContent = "Mulțumesc. Acest formular demo este gata să se conecteze la o Funcție Cloudflare.";
     event.currentTarget.reset();
   });
 }
