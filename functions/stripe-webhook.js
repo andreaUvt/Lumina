@@ -66,7 +66,12 @@ async function recordWebhookEvent(env, event) {
 }
 
 async function handleCheckoutCompleted(env, session) {
+  // cart items now look like: { id, variantId, quantity }
   const cart = JSON.parse(session.metadata?.cart || "[]");
+
+  const variantIds = cart.filter((item) => item.variantId).map((item) => item.variantId);
+  const variants = await getVariants(env, variantIds);
+
   const orderResponse = await supabaseFetch(env, "/rest/v1/orders", {
     method: "POST",
     headers: { Prefer: "return=representation" },
@@ -81,11 +86,16 @@ async function handleCheckoutCompleted(env, session) {
   if (!orderResponse.ok) throw new Error("Could not store order.");
   const [order] = await orderResponse.json();
 
-  const items = cart.map((item) => ({
-    order_id: order.id,
-    product_id: item.id,
-    quantity: item.quantity
-  }));
+  const items = cart.map((item) => {
+    const variant = variants.find((entry) => entry.id === item.variantId);
+    return {
+      order_id: order.id,
+      product_id: item.id,
+      variant_id: item.variantId || null,
+      color_name: variant?.color_name || null,
+      quantity: item.quantity
+    };
+  });
   if (items.length) {
     const itemResponse = await supabaseFetch(env, "/rest/v1/order_items", {
       method: "POST",
@@ -94,55 +104,28 @@ async function handleCheckoutCompleted(env, session) {
     if (!itemResponse.ok) throw new Error("Could not store order items.");
   }
 
-  await Promise.all(cart.map((item) => supabaseFetch(env, "/rest/v1/rpc/decrement_inventory", {
-    method: "POST",
-    body: JSON.stringify({ product_id_input: item.id, quantity_input: item.quantity })
-  })));
-
-  // Order confirmation email — failures here are logged but never block order/inventory recording.
-  try {
-    const customerEmail = session.customer_details?.email;
-    if (customerEmail && env.RESEND_API_KEY) {
-      const productTitles = await getProductTitles(env, cart.map((item) => item.id));
-      await sendOrderConfirmationEmail(env, order, customerEmail, cart, productTitles);
+  // Decrement variant stock when a color was chosen; otherwise fall back
+  // to the product-level inventory (products with no colors at all).
+  await Promise.all(cart.map((item) => {
+    if (item.variantId) {
+      return supabaseFetch(env, "/rest/v1/rpc/decrement_variant_inventory", {
+        method: "POST",
+        body: JSON.stringify({ variant_id_input: item.variantId, quantity_input: item.quantity })
+      });
     }
-  } catch (emailError) {
-    console.error("Order confirmation email failed:", emailError);
-  }
+    return supabaseFetch(env, "/rest/v1/rpc/decrement_inventory", {
+      method: "POST",
+      body: JSON.stringify({ product_id_input: item.id, quantity_input: item.quantity })
+    });
+  }));
 }
 
-async function getProductTitles(env, productIds) {
-  if (!productIds.length) return {};
-  const idList = productIds.map((id) => `"${id}"`).join(",");
-  const response = await supabaseFetch(env, `/rest/v1/products?id=in.(${idList})&select=id,title`);
-  if (!response.ok) return {};
-  const rows = await response.json();
-  return Object.fromEntries(rows.map((row) => [row.id, row.title]));
-}
-
-async function sendOrderConfirmationEmail(env, order, customerEmail, cart, productTitles) {
-  const itemsHtml = cart
-    .map((item) => `<li>${productTitles[item.id] || item.id} × ${item.quantity}</li>`)
-    .join("");
-
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: "Aurel & Co. <orders@yourdomain.com>", // update once your domain is verified in Resend
-      to: customerEmail,
-      subject: "Thank you for your order!",
-      html: `
-        <h1>Thanks for your order!</h1>
-        <p>We're excited to get your handcrafted piece ready for you.</p>
-        <ul>${itemsHtml}</ul>
-        <p>Order ID: ${order.id}</p>
-      `
-    })
-  });
+async function getVariants(env, ids) {
+  if (!ids.length) return [];
+  const quoted = ids.map((id) => `"${id.replaceAll('"', '\\"')}"`).join(",");
+  const response = await supabaseFetch(env, `/rest/v1/product_variants?id=in.(${quoted})&select=id,color_name`);
+  if (!response.ok) return [];
+  return response.json();
 }
 
 function supabaseFetch(env, path, options = {}) {
